@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape London | Go Adventure ({{ user_postcode }})</title>
+    <style>
+        :root {
+            --primary: #1e293b;
+            --secondary: #3b82f6;
+            --success: #10b981;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding: 40px 20px; 
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        /* Header Styling */
+        .header { 
+            margin-bottom: 30px; 
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            text-align: center;
+        }
+        .header h1 { margin: 0; color: var(--primary); font-size: 2.2rem; letter-spacing: -0.5px; }
+        .header p { margin: 8px 0 0 0; color: var(--text-muted); font-size: 1.05rem; }
+
+        /* Table Styling */
+        .table-container {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { 
+            background-color: var(--primary); 
+            color: white; 
+            padding: 18px 20px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            user-select: none;
+        }
+        th:hover { background-color: #334155; }
+        td { 
+            padding: 20px; 
+            border-bottom: 1px solid var(--border); 
+            vertical-align: top;
+        }
+        tbody tr:nth-child(even) { background-color: #f8fafc; }
+        tbody tr:hover { background-color: #f1f5f9; }
+
+        /* Column Adjustments */
+        .col-dest { width: 18%; }
+        .col-dest strong { font-size: 1.1rem; color: var(--primary); display: block; margin-bottom: 6px; }
+        .col-type { width: 10%; }
+        .col-details { width: 32%; color: var(--text-muted); font-size: 0.95rem; }
+        .col-time { width: 10%; font-weight: 600; font-size: 1.05rem; }
+        .col-legs { width: 8%; text-align: center; }
+        .col-route { width: 12%; color: var(--text-muted); font-size: 0.85rem; }
+
+        /* Badges */
+        .badge { 
+            padding: 5px 10px; 
+            border-radius: 20px; 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+        .badge-hiking { background-color: #dcfce7; color: #065f46; }
+        .badge-cultural { background-color: #f3e8ff; color: #4c1d95; }
+        .badge-day-trip { background-color: #e0f2fe; color: #1e40af; }
+        .badge-overnight { background-color: #ffedd5; color: #9a3412; }
+
+        /* Action Links */
+        .action-links { display: flex; flex-direction: column; gap: 6px; }
+        .action-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .link-map { color: #2563eb; background: #eff6ff; border-color: #dbeafe; }
+        .link-map:hover { background: #dbeafe; transform: translateY(-1px); }
+        .link-train { color: #ea580c; background: #fff7ed; border-color: #ffedd5; }
+        .link-train:hover { background: #ffedd5; transform: translateY(-1px); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Escape London. Go Adventure.</h1>
+            <p>40 Trips from {{ user_postcode }} | Departing {{ user_time }} on {{ user_date }}</p>
+        </div>
+        
+        <div class="table-container">
+            <table id="tripsTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)" style="cursor:pointer;" class="col-dest">Destination &#x21D5;</th>
+                        <th onclick="sortTable(1)" style="cursor:pointer;" class="col-type">Type &#x21D5;</th>
+                        <th onclick="sortTable(2)" style="cursor:pointer;" class="col-details">Details &#x21D5;</th>
+                        <th onclick="sortTable(3)" style="cursor:pointer;" class="col-time">Time &#x21D5;</th>
+                        <th onclick="sortTable(4)" style="cursor:pointer;" class="col-legs">Legs &#x21D5;</th>
+                        <th onclick="sortTable(5)" style="cursor:pointer;" class="col-route">Route &#x21D5;</th>
+                        <th style="width: 10%;">Links</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    {% for trip in trips %}
+                    <tr>
+                        <td class="col-dest">
+                            <strong>{{ trip.name }}</strong>
+                            <span class="badge {% if trip.length == 'Day trip' %}badge-day-trip{% else %}badge-overnight{% endif %}">{{ trip.length }}</span>
+                        </td>
+                        <td class="col-type"><span class="badge {% if trip.type == 'Hiking' %}badge-hiking{% else %}badge-cultural{% endif %}">{{ trip.type }}</span></td>
+                        <td class="col-details">{{ trip.details }}</td>
+                        <td class="col-time">{{ trip.formatted_time }}</td>
+                        <td class="col-legs">{{ trip.legs }}</td>
+                        <td class="col-route">{{ trip.route_details }}</td>
+                        <td>
+                            <div class="action-links">
+                                <a href="{{ trip.google_maps_url }}" target="_blank" class="action-link link-map">🗺️ Map Route</a>
+                                {% if trip.nre_url %}
+                                <a href="{{ trip.nre_url }}" target="_blank" class="action-link link-train">🚂 Train Prices</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function sortTable(n) {
+            const table = document.getElementById("tripsTable");
+            const tbody = document.getElementById("tableBody");
+            let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            
+            switching = true;
+            dir = "asc"; 
+            
+            while (switching) {
+                switching = false;
+                rows = tbody.rows;
+                
+                for (i = 0; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("td")[n];
+                    y = rows[i + 1].getElementsByTagName("td")[n];
+                    
+                    let xContent = x.innerText || x.textContent;
+                    let yContent = y.innerText || y.textContent;
+                    
+                    if (n === 4) { // Legs
+                        xContent = parseInt(xContent) || 0;
+                        yContent = parseInt(yContent) || 0;
+                    } 
+                    else if (n === 3) { // Time
+                        let xMatch = xContent.match(/(?:(\d+)\s*h)?\s*(?:(\d+)\s*m)?/i);
+                        let yMatch = yContent.match(/(?:(\d+)\s*h)?\s*(?:(\d+)\s*m)?/i);
+                        xContent = ((parseInt(xMatch && xMatch[1]) || 0) * 60) + (parseInt(xMatch && xMatch[2]) || 0);
+                        yContent = ((parseInt(yMatch && yMatch[1]) || 0) * 60) + (parseInt(yMatch && yMatch[2]) || 0);
+                    } 
+                    else {
+                        xContent = xContent.toLowerCase();
+                        yContent = yContent.toLowerCase();
+                    }
+
+                    if (dir === "asc") {
+                        if (xContent > yContent) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir === "desc") {
+                        if (xContent < yContent) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount === 0 && dir === "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
